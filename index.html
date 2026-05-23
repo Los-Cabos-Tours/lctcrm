@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CaboCRM — Los Cabos Tours Operations Desk</title>
+  
+  <!-- Tabler Icons CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/tabler-icons.min.css" rel="stylesheet" />
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- App Shell -->
+  <div class="app-container">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="app-sidebar">
+      <a href="#" class="sidebar-brand">
+        <div class="brand-icon"><i class="ti ti-anchor"></i></div>
+        <div class="brand-text">
+          <span class="brand-title">CaboCRM</span>
+          <span class="brand-subtitle">Los Cabos Tours</span>
+        </div>
+      </a>
+      
+      <nav class="sidebar-menu">
+        <li class="menu-item active" id="nav-dashboard">
+          <a onclick="navigate('dashboard')">
+            <i class="ti ti-dashboard"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="menu-item" id="nav-guests">
+          <a onclick="navigate('guests')">
+            <i class="ti ti-users"></i>
+            <span>Guests &amp; Leads</span>
+          </a>
+        </li>
+        <li class="menu-item" id="nav-bookings">
+          <a onclick="navigate('bookings')">
+            <i class="ti ti-calendar-event"></i>
+            <span>Bookings Desk</span>
+          </a>
+        </li>
+        <li class="menu-item" id="nav-concierge">
+          <a onclick="navigate('concierge')">
+            <i class="ti ti-concierge-bell"></i>
+            <span>Concierge Desk</span>
+          </a>
+        </li>
+        <li class="menu-item" id="nav-operators">
+          <a onclick="navigate('operators')">
+            <i class="ti ti-ship"></i>
+            <span>Partner Operators</span>
+          </a>
+        </li>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar">AC</div>
+          <div class="user-info">
+            <span class="user-name">Ana Calderon</span>
+            <span class="user-role">Operations Lead</span>
+          </div>
+        </div>
+        <button class="btn-reset-db" onclick="resetDatabase()"><i class="ti ti-refresh"></i> Reset Sample Data</button>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="main-content">
+      
+      <!-- Top Header Navbar -->
+      <header class="header-bar">
+        <div class="header-title-area">
+          <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle Navigation">
+            <i class="ti ti-menu-2"></i>
+          </button>
+          <h1 class="header-title" id="page-title">Operations Dashboard</h1>
+        </div>
+        
+        <div class="header-metrics">
+          <div class="metric-pill" id="badge-arrivals" title="Guests arriving today">
+            <i class="ti ti-plane-arrival"></i>
+            <span id="metric-arrivals-val">0 Arrivals Today</span>
+          </div>
+          <div class="metric-pill" id="badge-intown" title="Active guests in Cabo resorts">
+            <i class="ti ti-hotel"></i>
+            <span id="metric-intown-val">0 Guests in Town</span>
+          </div>
+          <div class="metric-pill alert" id="badge-alerts" title="Requires operational action">
+            <i class="ti ti-alert-circle"></i>
+            <span id="metric-alerts-val">0 Alerts</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- View Wrapper -->
+      <section class="content-frame" id="app-view">
+        <!-- SPA view outputs here -->
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- ================= DRAWERS & MODALS ================= -->
+
+  <!-- Guest Details Slide-Out Drawer -->
+  <div class="drawer-overlay" id="guest-drawer-overlay" onclick="closeGuestDrawer(event)">
+    <div class="drawer-box">
+      <div class="drawer-header">
+        <h2 class="modal-title" id="drawer-guest-name">Guest Profile</h2>
+        <button class="modal-close" onclick="hideGuestDrawer()">&times;</button>
+      </div>
+      <div class="drawer-body" id="guest-drawer-content">
+        <!-- Guest detailed breakdown rendered by components.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Guest Creation/Editing Modal -->
+  <div class="modal-overlay" id="guest-modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title" id="guest-modal-title">Add Guest Lead</h2>
+        <button class="modal-close" onclick="closeGuestModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="guest-form" onsubmit="handleGuestSubmit(event)">
+          <input type="hidden" id="form-guest-id" />
+          <div class="form-grid">
+            <div class="form-group form-full">
+              <label class="form-label" for="form-guest-name">Full Name</label>
+              <input type="text" id="form-guest-name" class="form-input" required placeholder="e.g. John Doe" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-guest-email">Email Address</label>
+              <input type="email" id="form-guest-email" class="form-input" required placeholder="e.g. john@domain.com" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-guest-phone">WhatsApp/Phone</label>
+              <input type="text" id="form-guest-phone" class="form-input" required placeholder="e.g. +1 (555) 123-4567" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-guest-hotel">Hotel/Resort</label>
+              <select id="form-guest-hotel" class="form-select" required>
+                <!-- Prepopulated from db resorts -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-guest-room">Villa / Room Number</label>
+              <input type="text" id="form-guest-room" class="form-input" placeholder="e.g. Room 402" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-guest-checkin">Arrival / Check-in</label>
+              <input type="date" id="form-guest-checkin" class="form-input" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-guest-checkout">Departure / Check-out</label>
+              <input type="date" id="form-guest-checkout" class="form-input" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-guest-count">Total Guests in Party</label>
+              <input type="number" id="form-guest-count" class="form-input" value="2" min="1" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-guest-status">Guest Status</label>
+              <select id="form-guest-status" class="form-select" required>
+                <option value="Lead">Lead / Inquiry</option>
+                <option value="Confirmed">Confirmed Booking</option>
+                <option value="Active">Active in Cabo</option>
+                <option value="Completed">Trip Completed</option>
+              </select>
+            </div>
+            <div class="form-group form-full">
+              <label class="form-label" for="form-guest-notes">Special Requests / Preferences</label>
+              <textarea id="form-guest-notes" class="form-textarea" placeholder="Allergies, preferences, anniversary, golf inquiries..."></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeGuestModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Guest</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Booking Creation Wizard Modal -->
+  <div class="modal-overlay" id="booking-modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title" id="booking-modal-title">New Excursion Booking</h2>
+        <button class="modal-close" onclick="closeBookingModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="booking-form" onsubmit="handleBookingSubmit(event)">
+          <input type="hidden" id="form-booking-id" />
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="form-booking-guest">Select Guest</label>
+              <select id="form-booking-guest" class="form-select" required>
+                <!-- Rendered dynamically -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-booking-item">Select Excursion/Service</label>
+              <select id="form-booking-item" class="form-select" onchange="updateBookingCalculator()" required>
+                <!-- Prepopulated from CATALOG_ITEMS -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-booking-date">Date of Excursion</label>
+              <input type="date" id="form-booking-date" class="form-input" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-booking-time">Excursion Time</label>
+              <input type="time" id="form-booking-time" class="form-input" required value="09:00" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-booking-adults">Adult Tickets</label>
+              <input type="number" id="form-booking-adults" class="form-input" value="2" min="1" oninput="updateBookingCalculator()" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-booking-children">Child Tickets</label>
+              <input type="number" id="form-booking-children" class="form-input" value="0" min="0" oninput="updateBookingCalculator()" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-booking-status">Booking Status</label>
+              <select id="form-booking-status" class="form-select" required>
+                <option value="Pending">Pending</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-booking-payment">Payment Status</label>
+              <select id="form-booking-payment" class="form-select" required>
+                <option value="Unpaid">Unpaid</option>
+                <option value="Deposit">Deposit Paid</option>
+                <option value="Paid">Fully Paid</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-booking-operator">Operator Voucher Confirmation</label>
+              <select id="form-booking-operator" class="form-select" required>
+                <option value="Pending">Pending Confirmation</option>
+                <option value="Confirmed">Confirmed with Partner</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-booking-customprice">Override Price (USD)</label>
+              <input type="number" id="form-booking-customprice" class="form-input" placeholder="Leave empty for retail price" oninput="updateBookingCalculator()" />
+            </div>
+            <div class="form-group form-full">
+              <label class="form-label" for="form-booking-notes">Booking Notes / Hotel Pickup Details</label>
+              <textarea id="form-booking-notes" class="form-textarea" placeholder="Include hotel pickup instructions, dietary requests, tour specifics..."></textarea>
+            </div>
+            
+            <!-- Live Financial Calculator widget -->
+            <div class="form-full" id="booking-calculator-widget">
+              <!-- Rendered by components.js -->
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeBookingModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Excursion</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Concierge Task Drawer/Modal -->
+  <div class="modal-overlay" id="task-modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title" id="task-modal-title">New Concierge Request</h2>
+        <button class="modal-close" onclick="closeTaskModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="task-form" onsubmit="handleTaskSubmit(event)">
+          <input type="hidden" id="form-task-id" />
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="form-task-guest">Guest</label>
+              <select id="form-task-guest" class="form-select" required>
+                <!-- Rendered dynamically -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-task-category">Request Category</label>
+              <select id="form-task-category" class="form-select" required>
+                <option value="Transfer">Airport / Local Transfer</option>
+                <option value="Food Delivery">Food Delivery Reservation</option>
+                <option value="Spa">In-Villa Spa / Wellness</option>
+                <option value="Chef">Private Chef &amp; Butler</option>
+                <option value="Grocery">Grocery &amp; Villa Pre-Stock</option>
+                <option value="Booking">Other Excursion Inquiry</option>
+                <option value="Other">Other Request</option>
+              </select>
+            </div>
+            <div class="form-group form-full">
+              <label class="form-label" for="form-task-title">Short Title</label>
+              <input type="text" id="form-task-title" class="form-input" required placeholder="e.g. Schedule airport taxi pickup" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-task-date">Date Requested</label>
+              <input type="date" id="form-task-date" class="form-input" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-task-time">Time</label>
+              <input type="time" id="form-task-time" class="form-input" value="12:00" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-task-status">Progress Status</label>
+              <select id="form-task-status" class="form-select" required>
+                <option value="Todo">To Do (Open Request)</option>
+                <option value="In Progress">In Progress (Contacting Operator)</option>
+                <option value="Completed">Completed &amp; Delivered</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-task-assignee">Assigned Runner</label>
+              <select id="form-task-assignee" class="form-select">
+                <option value="Ana (Concierge)">Ana (Concierge Desk)</option>
+                <option value="Carlos (Runner)">Carlos (Field Runner)</option>
+                <option value="Manuel (Driver)">Manuel (Driver Dispatch)</option>
+                <option value="Sofia (Lobby Host)">Sofia (Lobby Host)</option>
+              </select>
+            </div>
+            <div class="form-group form-full">
+              <label class="form-label" for="form-task-desc">Description of Request</label>
+              <textarea id="form-task-desc" class="form-textarea" required placeholder="Details on items to buy, delivery directions, spa treatments to schedule..."></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Request</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Toast Notification Area -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ================= SCRIPTS ================= -->
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- App JS Files (Loaded in dependency order) -->
+  <script src="js/db.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
